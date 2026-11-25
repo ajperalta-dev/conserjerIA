@@ -44,3 +44,18 @@ Cierre de comprobaciones: ESLint sin advertencias, typecheck, 5 pruebas Vitest, 
 
 ## Vinculación de infraestructura
 Repositorio Git independiente vinculado a https://github.com/ajperalta-dev/conserjerIA. Proyecto Supabase indicado por el usuario: nqtweswtbwaxziballum. La conexión MCP devuelve falta de permisos para este proyecto. Las migraciones alojadas y la validación de Auth continúan pendientes de ese acceso.
+
+## Conexión alojada y verificación · 25 de noviembre de 2026
+La autorización de la organización alpha quedó verificada. ConserjerIA (nqtweswtbwaxziballum) está ACTIVE_HEALTHY. Se aplicaron identity_security e identity_indexes, con versiones locales alineadas con el historial remoto.
+
+Las ocho tablas públicas tienen RLS y consortium-private es privado. Las pruebas SQL en supabase/tests/hosted_security.sql pasaron contra PostgreSQL alojado, cubriendo ADMIN, OWNER, TENANT, MFA, escalamiento y rechazo sin cambios. Los fixtures se revirtieron y se verificaron cero usuarios de prueba remanentes.
+
+Se revocaron permisos predeterminados de anon/authenticated y se concedieron privilegios mínimos por columna. La aceptación privilegiada quedó en private, detrás de una función pública invoker. Se agregaron índices para FK y se optimizaron las consultas JWT en políticas. El asesor de seguridad quedó sin alertas. El asesor de rendimiento solo conserva avisos informativos de índices aún sin uso en la base nueva.
+
+La aplicación local utiliza la URL y clave publicable reales en .env.local, excluido de Git. Los tipos oficiales se generaron desde Supabase. test:db conserva las 17 comprobaciones locales y ya no sobrescribe esos tipos.
+
+Configuración alojada de Auth verificada en dashboard: registro público deshabilitado, confirmación de email habilitada, TOTP habilitado y callback exacto http://localhost:3000/auth/callback agregado. Las plantillas predeterminadas también son compatibles mediante /auth/complete, que verifica la sesión y elimina los tokens del fragmento de URL.
+
+Pendientes concretos: cuenta inicial de administración, clave secreta de servidor para enviar invitaciones desde la app, proveedor SMTP propio para personalizar plantillas y pruebas con correo recibido y autenticador real. No se provisionaron usuarios permanentes ni se enviaron emails en esta verificación.
+
+Verificación final de esta integración: 17 pruebas PostgreSQL locales, pruebas SQL alojadas con rollback, 5 pruebas Vitest y 3 recorridos Playwright con Edge aprobados. ESLint, TypeScript y build de producción aprobados. El tercer recorrido comprueba rechazo de tokens inválidos, eliminación del fragmento y protección posterior de /dashboard.

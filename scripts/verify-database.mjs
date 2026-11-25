@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import fs from "node:fs";
 const db = new PGlite();
 await db.exec(`
- create role authenticated;
+ create role authenticated; create role anon;
  create schema auth; create schema storage;
  create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
@@ -11,10 +11,11 @@ await db.exec(`
  grant execute on all functions in schema auth to authenticated;
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
 `);
-const migration = fs
+for (const file of fs
   .readdirSync("supabase/migrations")
-  .find((f) => f.endsWith("identity_security.sql"));
-await db.exec(fs.readFileSync("supabase/migrations/" + migration, "utf8"));
+  .filter((f) => f.endsWith(".sql"))
+  .sort())
+  await db.exec(fs.readFileSync("supabase/migrations/" + file, "utf8"));
 const uid = (n) => "00000000-0000-0000-0000-" + String(n).padStart(12, "0");
 for (let i = 1; i <= 4; i++)
   await db.query("insert into auth.users values($1,$2,now())", [
@@ -169,56 +170,5 @@ assert(
 );
 await denied("select accept_invitation('" + invitation + "')");
 await db.exec("reset role");
-const columns = (
-  await db.query(
-    "select table_name,column_name,data_type,is_nullable,column_default from information_schema.columns where table_schema='public' order by table_name,ordinal_position",
-  )
-).rows;
-const names = [...new Set(columns.map((c) => c.table_name))];
-const type = (c) =>
-  c.data_type === "USER-DEFINED"
-    ? '"SUPER_ADMIN"|"ADMIN"|"ACCOUNTANT"|"BOARD_MEMBER"|"OWNER"|"TENANT"|"MAINTENANCE"'
-    : c.data_type === "boolean"
-      ? "boolean"
-      : "string";
-let output =
-  "// Generated from PostgreSQL information_schema by scripts/verify-database.mjs\nexport type Database = { public: { Tables: {\n";
-for (const name of names) {
-  const cols = columns.filter((c) => c.table_name === name);
-  const row = cols
-    .map(
-      (c) =>
-        JSON.stringify(c.column_name) +
-        ": " +
-        type(c) +
-        (c.is_nullable === "YES" ? " | null" : ""),
-    )
-    .join(";");
-  const insert = cols
-    .map(
-      (c) =>
-        JSON.stringify(c.column_name) +
-        (c.column_default || c.is_nullable === "YES" ? "?" : "") +
-        ": " +
-        type(c) +
-        (c.is_nullable === "YES" ? " | null" : ""),
-    )
-    .join(";");
-  output +=
-    JSON.stringify(name) +
-    ": {Row:{" +
-    row +
-    "};Insert:{" +
-    insert +
-    "};Update:Partial<{" +
-    insert +
-    "}>;Relationships:[]};\n";
-}
-output +=
-  "}; Views:Record<string,never>; Functions:{has_permission:{Args:{target:string;action:string};Returns:boolean};accept_invitation:{Args:{invitation_id:string};Returns:undefined}};Enums:{app_role:" +
-  type({ data_type: "USER-DEFINED" }) +
-  "};CompositeTypes:Record<string,never> } };\n";
-fs.mkdirSync("src/types", { recursive: true });
-fs.writeFileSync("src/types/database.ts", output);
-console.log(checks + " PostgreSQL security checks passed. Types generated.");
+console.log(checks + " PostgreSQL security checks passed.");
 await db.close();

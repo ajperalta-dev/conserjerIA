@@ -39,3 +39,13 @@ test("navegación móvil y acceso privado cerrado", async ({ page }) => {
     .click();
   await expect(page.getByRole("heading", { name: "Asambleas" })).toBeVisible();
 });
+
+test("rechaza un enlace de sesión inválido y elimina sus tokens de la URL", async ({
+  page,
+}) => {
+  await page.goto("/auth/callback#access_token=invalid&refresh_token=invalid");
+  await expect(page).toHaveURL(/auth\/complete$/);
+  await expect(page.getByRole("status")).toContainText("No se pudo verificar");
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/acceso$/);
+});

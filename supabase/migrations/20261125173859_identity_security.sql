@@ -23,7 +23,7 @@ create table public.invitations(id uuid primary key default gen_random_uuid(), o
 create index on public.invitations(email);
 create table public.audit_logs(id uuid primary key default gen_random_uuid(), actor_id uuid references auth.users(id), organization_id uuid references public.organizations(id), action text not null, resource_id uuid not null, created_at timestamptz not null default now());
 -- No direct writes to membership tables, permission catalog or audit log.
-do $$ declare t text; begin foreach t in array array['profiles','organizations','organization_members','consortiums','consortium_members','role_permissions','invitations','audit_logs'] loop execute format('alter table public.%I enable row level security',t); execute format('grant select on public.%I to authenticated',t); end loop; end $$;
+do $$ declare t text; begin foreach t in array array['profiles','organizations','organization_members','consortiums','consortium_members','role_permissions','invitations','audit_logs'] loop execute format('alter table public.%I enable row level security',t); execute format('revoke all on public.%I from anon, authenticated',t); execute format('grant select on public.%I to authenticated',t); end loop; end $$;
 create policy self_profile on public.profiles for select to authenticated using(id=(select auth.uid()));
 grant update(display_name,updated_at) on public.profiles to authenticated;
 create policy edit_profile on public.profiles for update to authenticated using(id=(select auth.uid())) with check(id=(select auth.uid()));
@@ -48,7 +48,7 @@ end $$;
 revoke all on function private.audit_change() from public;
 create trigger audit_consortium after update on public.consortiums for each row execute function private.audit_change();
 create trigger audit_invite after insert or update on public.invitations for each row execute function private.audit_change();
-create function public.accept_invitation(invitation_id uuid) returns void language plpgsql security definer set search_path='' as $$
+create function private.accept_invitation(invitation_id uuid) returns void language plpgsql security definer set search_path='' as $$
 declare invitation public.invitations;
 begin
  if auth.uid() is null then raise exception 'Sesión requerida'; end if;
@@ -61,6 +61,11 @@ begin
  insert into public.consortium_members(organization_id,consortium_id,user_id,role) values(invitation.organization_id,invitation.consortium_id,auth.uid(),invitation.role);
  update public.invitations set accepted_at=now() where id=invitation.id;
 end $$;
+revoke all on function private.accept_invitation(uuid) from public;
+grant execute on function private.accept_invitation(uuid) to authenticated;
+create function public.accept_invitation(invitation_id uuid) returns void language sql security invoker set search_path='' as $$
+ select private.accept_invitation(invitation_id);
+$$;
 revoke all on function public.accept_invitation(uuid) from public;
 grant execute on function public.accept_invitation(uuid) to authenticated;
 revoke all on function public.has_permission(uuid,text) from public;
