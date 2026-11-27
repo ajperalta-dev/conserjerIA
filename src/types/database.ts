@@ -49,6 +49,129 @@ export type Database = {
           },
         ];
       };
+      billing_groups: {
+        Row: {
+          consortium_id: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          consortium_id: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          consortium_id?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "billing_groups_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: false;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      buildings: {
+        Row: {
+          archived_at: string | null;
+          consortium_id: string;
+          id: string;
+          kind: string;
+          name: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          consortium_id: string;
+          id?: string;
+          kind: string;
+          name: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          consortium_id?: string;
+          id?: string;
+          kind?: string;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "buildings_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: false;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      consortium_details: {
+        Row: {
+          address: string | null;
+          bylaws: string | null;
+          cadastral_code: string | null;
+          closing_day: number | null;
+          closing_month: number | null;
+          consortium_id: string;
+          construction_year: number | null;
+          cuit: string | null;
+          department: string | null;
+          emergency_contacts: string | null;
+          insurance: string | null;
+          latitude: number | null;
+          locality: string | null;
+          longitude: number | null;
+          postal_code: string | null;
+          province: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          bylaws?: string | null;
+          cadastral_code?: string | null;
+          closing_day?: number | null;
+          closing_month?: number | null;
+          consortium_id: string;
+          construction_year?: number | null;
+          cuit?: string | null;
+          department?: string | null;
+          emergency_contacts?: string | null;
+          insurance?: string | null;
+          latitude?: number | null;
+          locality?: string | null;
+          longitude?: number | null;
+          postal_code?: string | null;
+          province?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          bylaws?: string | null;
+          cadastral_code?: string | null;
+          closing_day?: number | null;
+          closing_month?: number | null;
+          consortium_id?: string;
+          construction_year?: number | null;
+          cuit?: string | null;
+          department?: string | null;
+          emergency_contacts?: string | null;
+          insurance?: string | null;
+          latitude?: number | null;
+          locality?: string | null;
+          longitude?: number | null;
+          postal_code?: string | null;
+          province?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "consortium_details_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: true;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       consortium_members: {
         Row: {
           consortium_id: string;
@@ -126,6 +249,41 @@ export type Database = {
           },
         ];
       };
+      floors: {
+        Row: {
+          archived_at: string | null;
+          building_id: string;
+          consortium_id: string;
+          id: string;
+          level: number;
+          name: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          building_id: string;
+          consortium_id: string;
+          id?: string;
+          level: number;
+          name: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          building_id?: string;
+          consortium_id?: string;
+          id?: string;
+          level?: number;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "floors_consortium_id_building_id_fkey";
+            columns: ["consortium_id", "building_id"];
+            isOneToOne: false;
+            referencedRelation: "buildings";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
       invitations: {
         Row: {
           accepted_at: string | null;
@@ -136,6 +294,7 @@ export type Database = {
           expires_at: string;
           id: string;
           organization_id: string;
+          resident_id: string | null;
           role: Database["public"]["Enums"]["app_role"];
         };
         Insert: {
@@ -147,6 +306,7 @@ export type Database = {
           expires_at?: string;
           id?: string;
           organization_id: string;
+          resident_id?: string | null;
           role: Database["public"]["Enums"]["app_role"];
         };
         Update: {
@@ -158,15 +318,116 @@ export type Database = {
           expires_at?: string;
           id?: string;
           organization_id?: string;
+          resident_id?: string | null;
           role?: Database["public"]["Enums"]["app_role"];
         };
         Relationships: [
+          {
+            foreignKeyName: "invitations_consortium_id_resident_id_fkey";
+            columns: ["consortium_id", "resident_id"];
+            isOneToOne: false;
+            referencedRelation: "residents";
+            referencedColumns: ["consortium_id", "id"];
+          },
           {
             foreignKeyName: "invitations_organization_id_consortium_id_fkey";
             columns: ["organization_id", "consortium_id"];
             isOneToOne: false;
             referencedRelation: "consortiums";
             referencedColumns: ["organization_id", "id"];
+          },
+        ];
+      };
+      lease_contracts: {
+        Row: {
+          consortium_id: string;
+          ends_on: string;
+          id: string;
+          landlord_id: string;
+          occupancy_id: string;
+          reference: string | null;
+          starts_on: string;
+          unit_id: string;
+        };
+        Insert: {
+          consortium_id: string;
+          ends_on: string;
+          id?: string;
+          landlord_id: string;
+          occupancy_id: string;
+          reference?: string | null;
+          starts_on: string;
+          unit_id: string;
+        };
+        Update: {
+          consortium_id?: string;
+          ends_on?: string;
+          id?: string;
+          landlord_id?: string;
+          occupancy_id?: string;
+          reference?: string | null;
+          starts_on?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lease_contracts_consortium_id_landlord_id_fkey";
+            columns: ["consortium_id", "landlord_id"];
+            isOneToOne: false;
+            referencedRelation: "residents";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "lease_contracts_consortium_id_unit_id_occupancy_id_fkey";
+            columns: ["consortium_id", "unit_id", "occupancy_id"];
+            isOneToOne: false;
+            referencedRelation: "occupancies";
+            referencedColumns: ["consortium_id", "unit_id", "id"];
+          },
+        ];
+      };
+      occupancies: {
+        Row: {
+          consortium_id: string;
+          ends_on: string | null;
+          id: string;
+          kind: string;
+          resident_id: string;
+          starts_on: string;
+          unit_id: string;
+        };
+        Insert: {
+          consortium_id: string;
+          ends_on?: string | null;
+          id?: string;
+          kind: string;
+          resident_id: string;
+          starts_on: string;
+          unit_id: string;
+        };
+        Update: {
+          consortium_id?: string;
+          ends_on?: string | null;
+          id?: string;
+          kind?: string;
+          resident_id?: string;
+          starts_on?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "occupancies_consortium_id_resident_id_fkey";
+            columns: ["consortium_id", "resident_id"];
+            isOneToOne: false;
+            referencedRelation: "residents";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "occupancies_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
           },
         ];
       };
@@ -226,6 +487,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      payment_responsibilities: {
+        Row: {
+          concept: string;
+          consortium_id: string;
+          ends_on: string | null;
+          id: string;
+          resident_id: string;
+          starts_on: string;
+          unit_id: string;
+        };
+        Insert: {
+          concept: string;
+          consortium_id: string;
+          ends_on?: string | null;
+          id?: string;
+          resident_id: string;
+          starts_on: string;
+          unit_id: string;
+        };
+        Update: {
+          concept?: string;
+          consortium_id?: string;
+          ends_on?: string | null;
+          id?: string;
+          resident_id?: string;
+          starts_on?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_responsibilities_consortium_id_resident_id_fkey";
+            columns: ["consortium_id", "resident_id"];
+            isOneToOne: false;
+            referencedRelation: "residents";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "payment_responsibilities_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -246,6 +552,175 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      property_bank_details: {
+        Row: {
+          account_holder: string | null;
+          bank_alias: string | null;
+          bank_name: string | null;
+          cbu: string | null;
+          consortium_id: string;
+        };
+        Insert: {
+          account_holder?: string | null;
+          bank_alias?: string | null;
+          bank_name?: string | null;
+          cbu?: string | null;
+          consortium_id: string;
+        };
+        Update: {
+          account_holder?: string | null;
+          bank_alias?: string | null;
+          bank_name?: string | null;
+          cbu?: string | null;
+          consortium_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "property_bank_details_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: true;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      property_files: {
+        Row: {
+          consortium_id: string;
+          id: string;
+          kind: string;
+          label: string;
+          path: string;
+          unit_id: string | null;
+        };
+        Insert: {
+          consortium_id: string;
+          id?: string;
+          kind: string;
+          label: string;
+          path: string;
+          unit_id?: string | null;
+        };
+        Update: {
+          consortium_id?: string;
+          id?: string;
+          kind?: string;
+          label?: string;
+          path?: string;
+          unit_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "property_files_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: false;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "property_files_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
+      property_history: {
+        Row: {
+          actor_id: string | null;
+          consortium_id: string;
+          created_at: string;
+          entity: string;
+          entity_id: string;
+          fields: string[];
+          id: string;
+          operation: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          consortium_id: string;
+          created_at?: string;
+          entity: string;
+          entity_id: string;
+          fields: string[];
+          id?: string;
+          operation: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          consortium_id?: string;
+          created_at?: string;
+          entity?: string;
+          entity_id?: string;
+          fields?: string[];
+          id?: string;
+          operation?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "property_history_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: false;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      residents: {
+        Row: {
+          archived_at: string | null;
+          consortium_id: string;
+          cuit: string | null;
+          dni: string | null;
+          email: string | null;
+          emergency_contact: string | null;
+          id: string;
+          name: string;
+          phone: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          archived_at?: string | null;
+          consortium_id: string;
+          cuit?: string | null;
+          dni?: string | null;
+          email?: string | null;
+          emergency_contact?: string | null;
+          id?: string;
+          name: string;
+          phone?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          archived_at?: string | null;
+          consortium_id?: string;
+          cuit?: string | null;
+          dni?: string | null;
+          email?: string | null;
+          emergency_contact?: string | null;
+          id?: string;
+          name?: string;
+          phone?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "residents_consortium_id_fkey";
+            columns: ["consortium_id"];
+            isOneToOne: false;
+            referencedRelation: "consortiums";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "residents_consortium_id_user_id_fkey";
+            columns: ["consortium_id", "user_id"];
+            isOneToOne: true;
+            referencedRelation: "consortium_members";
+            referencedColumns: ["consortium_id", "user_id"];
+          },
+        ];
       };
       role_permissions: {
         Row: {
@@ -268,6 +743,194 @@ export type Database = {
         };
         Relationships: [];
       };
+      unit_coefficients: {
+        Row: {
+          consortium_id: string;
+          effective_from: string;
+          expenses: number;
+          id: string;
+          ownership: number;
+          unit_id: string;
+        };
+        Insert: {
+          consortium_id: string;
+          effective_from: string;
+          expenses: number;
+          id?: string;
+          ownership: number;
+          unit_id: string;
+        };
+        Update: {
+          consortium_id?: string;
+          effective_from?: string;
+          expenses?: number;
+          id?: string;
+          ownership?: number;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "unit_coefficients_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
+      unit_ownerships: {
+        Row: {
+          consortium_id: string;
+          ends_on: string | null;
+          id: string;
+          resident_id: string;
+          share: number;
+          starts_on: string;
+          unit_id: string;
+        };
+        Insert: {
+          consortium_id: string;
+          ends_on?: string | null;
+          id?: string;
+          resident_id: string;
+          share: number;
+          starts_on: string;
+          unit_id: string;
+        };
+        Update: {
+          consortium_id?: string;
+          ends_on?: string | null;
+          id?: string;
+          resident_id?: string;
+          share?: number;
+          starts_on?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "unit_ownerships_consortium_id_resident_id_fkey";
+            columns: ["consortium_id", "resident_id"];
+            isOneToOne: false;
+            referencedRelation: "residents";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "unit_ownerships_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
+      unit_relationships: {
+        Row: {
+          consortium_id: string;
+          description: string | null;
+          id: string;
+          related_unit_id: string;
+          unit_id: string;
+        };
+        Insert: {
+          consortium_id: string;
+          description?: string | null;
+          id?: string;
+          related_unit_id: string;
+          unit_id: string;
+        };
+        Update: {
+          consortium_id?: string;
+          description?: string | null;
+          id?: string;
+          related_unit_id?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "unit_relationships_consortium_id_related_unit_id_fkey";
+            columns: ["consortium_id", "related_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "unit_relationships_consortium_id_unit_id_fkey";
+            columns: ["consortium_id", "unit_id"];
+            isOneToOne: false;
+            referencedRelation: "units";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
+      units: {
+        Row: {
+          archived_at: string | null;
+          billing_group_id: string | null;
+          cadastral_code: string | null;
+          common_area: number | null;
+          consortium_id: string;
+          covered: number | null;
+          floor_id: string;
+          id: string;
+          kind: string;
+          meters: string | null;
+          name: string;
+          registry_code: string;
+          semi_covered: number | null;
+          total_area: number | null;
+          uncovered: number | null;
+        };
+        Insert: {
+          archived_at?: string | null;
+          billing_group_id?: string | null;
+          cadastral_code?: string | null;
+          common_area?: number | null;
+          consortium_id: string;
+          covered?: number | null;
+          floor_id: string;
+          id?: string;
+          kind: string;
+          meters?: string | null;
+          name: string;
+          registry_code: string;
+          semi_covered?: number | null;
+          total_area?: number | null;
+          uncovered?: number | null;
+        };
+        Update: {
+          archived_at?: string | null;
+          billing_group_id?: string | null;
+          cadastral_code?: string | null;
+          common_area?: number | null;
+          consortium_id?: string;
+          covered?: number | null;
+          floor_id?: string;
+          id?: string;
+          kind?: string;
+          meters?: string | null;
+          name?: string;
+          registry_code?: string;
+          semi_covered?: number | null;
+          total_area?: number | null;
+          uncovered?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "units_consortium_id_billing_group_id_fkey";
+            columns: ["consortium_id", "billing_group_id"];
+            isOneToOne: false;
+            referencedRelation: "billing_groups";
+            referencedColumns: ["consortium_id", "id"];
+          },
+          {
+            foreignKeyName: "units_consortium_id_floor_id_fkey";
+            columns: ["consortium_id", "floor_id"];
+            isOneToOne: false;
+            referencedRelation: "floors";
+            referencedColumns: ["consortium_id", "id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -277,9 +940,20 @@ export type Database = {
         Args: { invitation_id: string };
         Returns: undefined;
       };
+      create_property_consortium: {
+        Args: { label: string; org: string };
+        Returns: string;
+      };
       has_permission: {
         Args: { action: string; target: string };
         Returns: boolean;
+      };
+      property_admins: {
+        Args: { target: string };
+        Returns: {
+          display_name: string;
+          user_id: string;
+        }[];
       };
     };
     Enums: {
@@ -309,12 +983,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -336,12 +1010,13 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -360,12 +1035,13 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -384,12 +1060,13 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
@@ -402,11 +1079,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }

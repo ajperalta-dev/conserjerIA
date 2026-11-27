@@ -19,6 +19,11 @@ export const modules = [
 ] as const;
 export type ModuleId = (typeof modules)[number][0];
 export function modulePath(id: ModuleId, base = "/vista-previa") {
+  if (base === "/dashboard") {
+    if (id === "consorcios") return base + "/propiedades";
+    if (id === "unidades" || id === "residentes")
+      return base + "/propiedades/" + id;
+  }
   return id === "inicio" ? base : base + "/" + id;
 }
 const normalize = (value: string) =>

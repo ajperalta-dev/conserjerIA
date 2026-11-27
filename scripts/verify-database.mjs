@@ -9,6 +9,8 @@ await db.exec(`
  create function auth.jwt() returns jsonb language sql stable as $$select current_setting('request.jwt.claims',true)::jsonb$$;
  grant usage on schema auth to authenticated;
  grant execute on all functions in schema auth to authenticated;
+ create table storage.objects(id uuid primary key,bucket_id text,name text);
+ alter table storage.objects enable row level security;
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
 `);
 for (const file of fs
@@ -170,5 +172,164 @@ assert(
 );
 await denied("select accept_invitation('" + invitation + "')");
 await db.exec("reset role");
+
+await db.exec("reset role");
+await db.exec(fs.readFileSync("supabase/seeds/pellegrini.sql", "utf8"));
+const demo = "9bca0802-8020-4000-8000-000000000002";
+const demoOrg = "9bca0802-8020-4000-8000-000000000001";
+const fixture = (
+  await db.query(
+    "select count(*)::int units,count(distinct billing_group_id)::int groups,sum(ownership)::float domain,sum(expenses)::float expenses from units join unit_coefficients on units.id=unit_coefficients.unit_id where units.consortium_id=$1",
+    [demo],
+  )
+).rows[0];
+assert(
+  fixture.units === 8 &&
+    fixture.groups === 6 &&
+    fixture.domain === 100 &&
+    fixture.expenses === 100,
+  "Pellegrini: ocho unidades, seis grupos y dos totales de 100%",
+);
+const linked = (
+  await db.query(
+    "select array_agg(u.registry_code order by u.registry_code) codes from units u where u.consortium_id=$1 group by u.billing_group_id having count(*)=2",
+    [demo],
+  )
+).rows
+  .map((row) => row.codes.join(","))
+  .sort();
+assert(
+  linked.join(";") === "5,7;6,8",
+  "Las cocheras están en los grupos de los dúplex correctos",
+);
+await db.query(
+  "insert into organization_members(organization_id,user_id,role) values($1,$2,'ADMIN'),($1,$3,'OWNER'),($1,$4,'TENANT')",
+  [demoOrg, uid(1), uid(2), uid(3)],
+);
+await db.query(
+  "insert into consortium_members(organization_id,consortium_id,user_id,role) values($1,$2,$3,'ADMIN'),($1,$2,$4,'OWNER'),($1,$2,$5,'TENANT')",
+  [demoOrg, demo, uid(1), uid(2), uid(3)],
+);
+await db.query(
+  "update residents set user_id=$1 where email='titular1@pellegrini.demo.invalid'",
+  [uid(2)],
+);
+await db.query(
+  "update residents set user_id=$1 where email='inquilino1@pellegrini.demo.invalid'",
+  [uid(3)],
+);
+const a = (
+  await db.query(
+    "select id from units where consortium_id=$1 and registry_code='1'",
+    [demo],
+  )
+).rows[0].id;
+await asUser(2);
+assert(
+  (await db.query("select registry_code from units")).rows
+    .map((row) => row.registry_code)
+    .join() === "1",
+  "Propietario solo ve su unidad vigente",
+);
+assert(
+  (await db.query("select * from residents")).rows.length === 1,
+  "Propietario solo ve su ficha personal",
+);
+await asUser(3);
+assert(
+  (await db.query("select registry_code from units")).rows
+    .map((row) => row.registry_code)
+    .join() === "2",
+  "Inquilino solo ve su unidad ocupada",
+);
+assert(
+  (await db.query("select * from unit_ownerships")).rows.length === 0,
+  "Inquilino no ve la titularidad ajena",
+);
+await asUser(4, "aal2");
+assert(
+  (await db.query("select * from units")).rows.length === 0,
+  "Admin externo no ve las unidades",
+);
+await denied(
+  "insert into residents(consortium_id,name) values('" + demo + "','Intruso')",
+);
+await asUser(1);
+await denied(
+  "insert into residents(consortium_id,name) values('" + demo + "','Sin MFA')",
+);
+await asUser(1, "aal2");
+await denied(
+  "update unit_coefficients set expenses=99 where unit_id='" + a + "'",
+);
+await denied(
+  "update residents set user_id='" +
+    uid(1) +
+    "' where consortium_id='" +
+    demo +
+    "'",
+);
+await denied(
+  "insert into units(consortium_id,floor_id,registry_code,name,kind) select '" +
+    uid(21) +
+    "',floor_id,'X','Cruzada','COCHERA' from units where id='" +
+    a +
+    "'",
+);
+await denied(
+  "insert into unit_ownerships(consortium_id,unit_id,resident_id,starts_on,share) select '" +
+    demo +
+    "','" +
+    a +
+    "',id,'2026-04-01',1 from residents where email='titular2@pellegrini.demo.invalid'",
+);
+const history = (
+  await db.query(
+    "select count(*)::int total from property_history where consortium_id=$1",
+    [demo],
+  )
+).rows[0].total;
+assert(
+  history > 8,
+  "Historial de modificaciones disponible para el administrador",
+);
+
+await db.exec("reset role");
+const unlinked = (
+  await db.query(
+    "insert into residents(consortium_id,name,email) values($1,'Ficha sin vincular','other@demo.invalid') returning id",
+    [demo],
+  )
+).rows[0].id;
+await db.query(
+  "insert into organization_members(organization_id,user_id,role) values($1,$2,'OWNER')",
+  [demoOrg, uid(4)],
+);
+await db.query(
+  "insert into consortium_members(organization_id,consortium_id,user_id,role) values($1,$2,$3,'OWNER')",
+  [demoOrg, demo, uid(4)],
+);
+const portalInvite = (
+  await db.query(
+    "insert into invitations(organization_id,consortium_id,email,role,created_by,resident_id) values($1,$2,'other@demo.invalid','TENANT',$3,$4) returning id",
+    [demoOrg, demo, uid(1), unlinked],
+  )
+).rows[0].id;
+await asUser(4);
+await db.query("select accept_invitation($1)", [portalInvite]);
+assert(
+  (await db.query("select id from residents where user_id=$1", [uid(4)]))
+    .rows[0].id === unlinked,
+  "Se vincula una ficha a un miembro existente",
+);
+assert(
+  (
+    await db.query(
+      "select role from consortium_members where consortium_id=$1",
+      [demo],
+    )
+  ).rows[0].role === "OWNER",
+  "La vinculación conserva el rol preexistente",
+);
 console.log(checks + " PostgreSQL security checks passed.");
 await db.close();

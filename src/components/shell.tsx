@@ -64,14 +64,21 @@ type Panel =
 export function Shell({
   children,
   base = "/vista-previa",
+  consortiumName,
 }: {
   children: React.ReactNode;
   base?: string;
+  consortiumName?: string;
 }) {
-  const router=useRouter();
+  const router = useRouter();
   const path = usePathname(),
     current =
-      modules.find(([id]) => modulePath(id, base) === path)?.[1] ?? "Inicio";
+      modules.find(
+        ([id]) =>
+          modulePath(id, base) === path ||
+          (["unidades", "residentes"].includes(id) &&
+            path.startsWith(modulePath(id, base) + "/")),
+      )?.[1] ?? "Inicio";
   const [collapsed, collapse] = useState(false),
     [panel, setPanel] = useState<Panel>("Buscar módulos"),
     [query, search] = useState(""),
@@ -153,7 +160,8 @@ export function Shell({
                 : open("Consorcios disponibles")
             }
           >
-            <Building2 /> Sin consorcio <ChevronDown size={14} />
+            <Building2 /> {consortiumName ?? "Sin consorcio"}{" "}
+            <ChevronDown size={14} />
           </button>
           <div className="grow" />
           <button
@@ -175,9 +183,7 @@ export function Shell({
           <button
             aria-label="Perfil"
             onClick={() =>
-              base === "/dashboard"
-                ? router.push("/cuenta")
-                : open("Perfil")
+              base === "/dashboard" ? router.push("/cuenta") : open("Perfil")
             }
           >
             <UserRound />

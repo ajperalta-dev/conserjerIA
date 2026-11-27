@@ -59,3 +59,27 @@ Configuración alojada de Auth verificada en dashboard: registro público deshab
 Pendientes concretos: cuenta inicial de administración, clave secreta de servidor para enviar invitaciones desde la app, proveedor SMTP propio para personalizar plantillas y pruebas con correo recibido y autenticador real. No se provisionaron usuarios permanentes ni se enviaron emails en esta verificación.
 
 Verificación final de esta integración: 17 pruebas PostgreSQL locales, pruebas SQL alojadas con rollback, 5 pruebas Vitest y 3 recorridos Playwright con Edge aprobados. ESLint, TypeScript y build de producción aprobados. El tercer recorrido comprueba rechazo de tokens inválidos, eliminación del fragmento y protección posterior de /dashboard.
+
+## Etapa 3 · 27 de noviembre de 2026
+
+- Se conectaron Consorcios, Unidades y Residentes al panel autenticado. El consorcio activo se valida en el servidor. Las escrituras administrativas requieren MFA en PostgreSQL.
+- Se agregaron fichas y formularios para consorcios, edificios, bloques, pisos, unidades, residentes, contratos, grupos de cobranza, vínculos y períodos de pago. Los registros principales se archivan para conservar su trazabilidad.
+- Los coeficientes se registran como versiones inmutables con fecha de vigencia. La titularidad admite múltiples residentes y valida que la suma simultánea no supere 100 %. El historial registra autor, fecha, operación y campos modificados.
+- Los archivos usan Storage privado y URLs firmadas. La aceptación de una invitación puede vincular la cuenta confirmada a su ficha de residente.
+- CSV y Excel tienen vista previa, mapeo y detección de duplicados. La escritura se confirma como lote atómico.
+- Supabase alojado recibió la migración property_administration y los datos ficticios de Pellegrini 802. Ocho unidades conservan sus porcentajes individuales y forman seis grupos de cobranza. Dominio y expensas suman 100 %.
+- El saldo de cuenta se integrará en Expensas y Cobranzas. La responsabilidad registrada en esta etapa conserva la unidad y el período y no genera movimientos.
+
+### Demostración y seguridad
+
+El conjunto de demostración en Supabase incluye tres cuentas Auth ficticias, una administradora, una propietaria y una inquilina. Sus contraseñas se generaron de forma aleatoria y se guardaron en .env.pellegrini-demo.local, excluido de Git. No se enviaron correos a estas cuentas.
+
+Los coeficientes informados se usaron para dominio y expensas desde el 1 de enero de 2026 como valores de demostración. Los grupos de los dúplex totalizan 20,23 % y 20,38 % respectivamente. No se inventaron CUIT, CBU, superficies o datos de contacto reales para el inmueble.
+
+Las 23 tablas públicas tienen RLS. El asesor de seguridad informó que Auth tiene deshabilitada la detección de contraseñas filtradas. Supabase ofrece esa función a partir del plan Pro. Se verificó en PostgreSQL alojado que la cuenta autenticada no puede reemplazar un vínculo de residencia ni editar coeficientes previos. Un inicio de sesión de administración confirmó que Supabase emite AAL2 tras verificar un TOTP. El factor temporal de prueba se retiró al terminar.
+
+Durante las pruebas se corrigió un formateador compartido que se exportaba desde un componente de cliente, y se explicitó la lectura del CSV como texto UTF-8 para evitar que SheetJS lo interpretara como Base64.
+
+El envío de invitaciones a cuentas nuevas requiere configurar la clave de servidor y el correo de Supabase. El flujo de código y vinculación con una cuenta confirmada está implementado.
+
+Cierre de la etapa: lint, TypeScript, build de producción, 7 pruebas Vitest, 33 comprobaciones PostgreSQL y 6 recorridos Playwright aprobados. Los recorridos autenticados verifican la importación de CSV y Excel, la detección de duplicados y la visibilidad por cuenta residente. Las migraciones alojadas también permiten vincular una ficha a un miembro existente y evitan que el CUIT revele registros de otro tenant por un error de unicidad.

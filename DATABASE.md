@@ -30,3 +30,11 @@ Storage crea consortium-private como bucket privado y deniega objetos hasta impl
 
 ## Tipos y pruebas
 npm run test:db ejecuta la migración en PostgreSQL embebido PGlite, crea roles y funciones Auth equivalentes para evaluar RLS sin sobrescribir src/types/database.ts. Los tipos actuales se generaron con la herramienta oficial sobre el proyecto alojado. Auth, correo, Storage y revocación real de sesiones requieren pruebas adicionales con usuarios habilitados. La generación oficial posterior se hace con supabase gen types typescript --local siguiendo su ayuda actual.
+
+## Etapa 3 instalada
+
+La organización se deriva del consorcio en todo el dominio. Los edificios y los bloques comparten tabla con un tipo explícito. Los pisos, unidades, grupos y vínculos usan claves foráneas compuestas para impedir referencias a otro consorcio. La superficie total se calcula a partir de las cuatro superficies declaradas.
+
+La titularidad y la ocupación se guardan por períodos con final excluido. La versión vigente del coeficiente es la última cuya fecha de inicio es anterior o igual a la fecha de consulta. Los grupos reúnen unidades para la cobranza. La suma del grupo se calcula con las versiones vigentes y nunca sobrescribe los coeficientes de las unidades.
+
+Las fichas personales se limitan al residente vinculado o al administrador. Propietarios e inquilinos leen exclusivamente unidades con titularidad u ocupación vigente. La carga documental se registra en property_files y usa el bucket privado consortium-private. Los datos bancarios quedan restringidos a administración. property_history registra los campos cambiados y preserva el historial sin duplicar datos personales o bancarios.

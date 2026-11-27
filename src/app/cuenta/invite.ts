@@ -5,7 +5,8 @@ import { z } from "zod";
 export async function inviteResident(_: string, form: FormData) {
   const parsed = z
     .object({
-      email: z.email(),
+      email: z.email().transform((value) => value.toLowerCase()),
+      resident_id: z.uuid().optional(),
       consortium_id: z.uuid(),
       organization_id: z.uuid(),
       role: z.enum([

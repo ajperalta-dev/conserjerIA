@@ -16,5 +16,12 @@ export async function requireScope() {
     .eq("user_id", user.id)
     .single();
   if (error || !data) redirect("/seleccionar");
-  return { ...data, userId: user.id };
+  const consortium = await client
+    .from("consortiums")
+    .select("id,name")
+    .eq("id", id)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (!consortium.data) redirect("/seleccionar");
+  return { ...data, userId: user.id, consortiumName: consortium.data.name };
 }

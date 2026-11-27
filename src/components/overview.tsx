@@ -4,8 +4,10 @@ import { Building2, House, Users, ArrowUpRight } from "lucide-react";
 import { modules, modulePath } from "@/modules/navigation/catalog";
 export default function Overview({
   base = "/vista-previa",
+  propertyCounts,
 }: {
   base?: string;
+  propertyCounts?: readonly [number, number, number];
 }) {
   return (
     <>
@@ -21,14 +23,18 @@ export default function Overview({
           [Building2, "Consorcios"],
           [House, "Unidades"],
           [Users, "Residentes"],
-        ].map(([IconComponent, title]) => {
+        ].map(([IconComponent, title], index) => {
           const Icon = IconComponent as typeof House;
           return (
             <Card key={String(title)} className="metric">
               <Icon size={22} />
               <h3>{String(title)}</h3>
-              <strong>—</strong>
-              <p>Sin datos vinculados</p>
+              <strong>{propertyCounts?.[index] ?? "—"}</strong>
+              <p>
+                {propertyCounts
+                  ? "Visibles para tu cuenta"
+                  : "Sin datos vinculados"}
+              </p>
             </Card>
           );
         })}
@@ -52,7 +58,12 @@ export default function Overview({
               </td>
               <td>{group}</td>
               <td>
-                <span className="pill">Pendiente</span>
+                <span className="pill">
+                  {base === "/dashboard" &&
+                  ["consorcios", "unidades", "residentes"].includes(id)
+                    ? "Disponible"
+                    : "Pendiente"}
+                </span>
               </td>
             </tr>
           ))}

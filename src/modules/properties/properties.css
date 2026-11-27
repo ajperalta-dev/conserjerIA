@@ -1,0 +1,118 @@
+.property-section {
+  padding: 1.2rem;
+  margin: 1rem 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.property-section h2 {
+  margin-bottom: 0.6rem;
+}
+.property-section a:not(.outline):not(.primary),
+.workmain > a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.property-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.property-cards .property-section {
+  margin: 0;
+}
+.property-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.property-actions .property-disclosure {
+  min-width: min(480px, 100%);
+  margin: 0;
+}
+.property-table {
+  overflow-x: auto;
+}
+.property-table table {
+  min-width: 420px;
+}
+.property-form {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0.8rem 0;
+  min-width: 0;
+}
+.property-fields,
+.property-data {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+  margin: 0.75rem 0;
+}
+.property-form label,
+.property-fields label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+.property-form input:not([type="checkbox"]),
+.property-form select,
+.property-form textarea,
+.property-fields select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0.6rem;
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 0;
+}
+.property-form textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+label.property-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.property-data dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.property-data dd {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.property-error {
+  color: var(--error);
+  font-weight: 600;
+}
+.property-disclosure {
+  background: var(--surface);
+  margin: 0.65rem 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.property-disclosure summary {
+  padding: 0.65rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.property-disclosure > div {
+  padding: 0 0.8rem 0.65rem;
+}
+.property-level,
+.property-files {
+  margin: 0.75rem 0;
+}
+.property-files {
+  padding-left: 1.2rem;
+  list-style: disc;
+}
